@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name=viewport content="width=device-width, initial-scale=1">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-capable" content="yes">
+	<head>PubMote - Smartphone Controller</head>
+	<script src="bower_components/webcomponentsjs/webcomponents.min.js"></script>
+	<link rel="import" href="bower_components/paper-fab/paper-fab.html">
+	<link rel="import" href="bower_components/paper-button/paper-button.html">
+	<link rel="import" href="bower_components/core-icons/hardware-icons.html">
+	<link rel="import" href="bower_components/core-icons/core-icons.html">
+	
+	<style>
+	    #arrow-btns, #action-btns {
+			text-align: center;    
+	    }
+
+	    #canvas{		    
+		    margin: 10px auto;
+	    }
+	    
+		paper-button{
+			background: rgba(217, 217, 217, 1);
+			padding: 3px 15px;
+			margin: 5px;
+		}
+		
+		paper-fab{
+			margin: 5px 10px;	
+		}
+		
+		.fullscreen {
+			padding-top: 75px;
+			width: 100%;
+			height: 100vh;
+		}
+		
+		.card {
+		    margin:auto;
+		    margin-top:5px;
+		    background-color:#FFFFFF;
+		    border-radius:2px;
+		    color:#000000;
+		    border:1px solid #d8d8d8;
+		    padding:10px;
+		    text-align:center;
+		    position:relative;
+		}
+	</style>
+</head>
+<body>
+
+	
+	<paper-shadow id="controller" z="1" class="card">
+		<div id="arrow-btns"> 
+	    	<paper-button onclick="controller.upButton()">
+				<core-icon icon="hardware:keyboard-arrow-up"></core-icon>
+			</paper-button> <br>
+			
+			<paper-button onclick="controller.leftButton()">
+				<core-icon icon="hardware:keyboard-arrow-left"></core-icon>
+			</paper-button>
+			<paper-button onclick="controller.rightButton()">
+				<core-icon icon="hardware:keyboard-arrow-right"></core-icon>
+			</paper-button> <br/>
+			
+			<paper-button onclick="controller.downButton()">
+				<core-icon icon="hardware:keyboard-arrow-down"></core-icon>
+			</paper-button> <br>
+			
+			<canvas id="canvas"></canvas>
+		</div>
+		<div id="action-btns">
+			<paper-fab icon="close" onclick="controller.xButton()"></paper-fab>
+			<paper-fab icon="radio-button-off" onclick="controller.oButton()"></paper-fab>
+			<br>
+			<paper-fab mini icon="polymer" style="background:black" onclick="changeChannel()"></paper-fab>
+		</div>
+	</paper-shadow>
+	
+	<paper-button raised onclick="enterFS()">Full Screen</paper-button>
+</body>
+	
+<script src="http://cdn.pubnub.com/pubnub-3.7.1.min.js"></script> 
+<script type="text/javascript">
+	var iOS = /(iPad|iPhone|iPod)/g.test( navigator.userAgent );
+	
+	window.scrollTo(0,1);
+	function enterFS(){
+      	var controller = document.getElementById("controller");
+      	controller.setAttribute("class", "fullscreen");
+	  	controller.webkitRequestFullScreen();
+   	}
+		
+	pubnub = PUBNUB.init({                                  
+		publish_key   : 'demo',
+		subscribe_key : 'demo'
+	});
+	
+	function sendData(channel,type,data){
+		pubnub.publish({                                     
+			channel : channel,
+			message : {"type":type, "data":data},
+			callback: function(m){ 
+				console.log(m) 
+			}
+		});
+	}
+	
+	function changeChannel(){
+		var channel = prompt("Enter a channel: ");
+		if (channel=="") channel="demo_wiinub";
+		controller.channel = channel;
+	}
+
+	controller = {
+		channel:"demo_wiinub",
+		aX:0, 
+		aY:0, 
+		aZ:0,
+		xPos:0, 
+		yPos:0,
+		speed:0,
+		upButton   : function() { sendData(this.channel,"button","UP");    },
+		leftButton : function() { sendData(this.channel,"button","LEFT");  },
+		rightButton: function() { sendData(this.channel,"button","RIGHT"); },
+	    downButton : function() { sendData(this.channel,"button","DOWN");  },
+		xButton    : function() { sendData(this.channel,"button","X");     },
+		oButton    : function() { sendData(this.channel,"button","O");     }
+	};
+	
+	lastUpdate = Date.now();
+	SHAKE_THRESHOLD = 1250;
+	
+	pubnub = PUBNUB.init({                                  
+		publish_key   : 'demo',
+		subscribe_key : 'demo'
+	});
+
+	if (window.DeviceMotionEvent == undefined) {
+        //No accelerometer is present. Use buttons. 
+        alert("no accelerometer");
+    }
+    else {
+        alert("accelerometer found");
+        window.addEventListener("devicemotion", accelerometerUpdate, true);
+    }    
+    
+	function accelerometerUpdate(e) {
+	    var timeNow = Date.now();
+	    var timeDiff = timeNow - lastUpdate;
+	    
+	    if (timeDiff > 100) {
+		    lastUpdate = timeNow;
+			var aX = event.accelerationIncludingGravity.x*1;
+			var aY = event.accelerationIncludingGravity.y*1; 
+			var aZ = event.accelerationIncludingGravity.z*1;
+			
+			// Fix for iOS
+			aX = iOS ? -1*aX : aX;
+			
+			//The following two lines are just to calculate a
+			// tilt. Not really needed. 
+			controller['xPos'] = Math.atan2(aY, aZ);
+			controller['yPos'] = Math.atan2(aX, aZ);
+			
+			var dX = Math.abs(aX - controller['aX']);
+			var dY = Math.abs(aY - controller['aY']); 
+			var dZ = Math.abs(aZ - controller['aZ']);
+			
+			controller['speed'] = Math.abs(aX + aY + aZ - controller['aX'] - controller['aY'] - controller['aZ'])/ timeDiff * 10000;
+
+			
+			if (dX > 0.45) { 
+				controller['aX'] = Math.floor(aX*2)/2.0;
+				sendData(controller.channel,"aX",controller['aX']); 
+			}
+			if (dY > 0.25) { 
+				controller['aY'] = Math.floor(aY*2)/2.0;
+				//sendData(controller.channel,"aY",controller['aY']); 
+			}
+			if (dZ > 0.25) { 
+				controller['aZ'] = Math.floor(aZ*2)/2.0;
+				//sendData(controller.channel,"aZ",controller['aZ']); 
+			}
+			
+			if (controller['speed'] > SHAKE_THRESHOLD) { 
+				sendData(controller.channel,"shake",controller['speed']);
+			}
+		}  
+		
+	}
+	
+	// Now some basic canvas stuff. Here we'll make a variable for the canvas and then initialize its 2d context for drawing
+	var canvas = document.getElementById("canvas"),
+		   ctx = canvas.getContext("2d");
+	
+	// Now setting the width and height of the canvas
+	var W = 250;
+	var H = 100;
+	var TILT_FACTOR = 15;
+	
+	// Applying these to the canvas element
+	canvas.height = H; canvas.width = W;
+
+	var paddle = {};
+
+	paddle = {
+		tiltVal : 0,
+		width: 50,
+
+		draw: function() {
+			var centerX = W/2,
+			    centerY = H/2;
+			var leftX  = centerX - 100,
+			    leftY  = centerY + TILT_FACTOR * controller['aX'];
+			var rightX = centerX + 100,
+			    rightY = centerY - TILT_FACTOR * controller['aX'];
+			ctx.beginPath();
+			ctx.moveTo(centerX,centerY);
+			ctx.lineTo(leftX,leftY);
+			ctx.moveTo(centerX,centerY);
+			ctx.lineTo(rightX,rightY);
+			ctx.strokeStyle="green";
+			ctx.stroke();
+		}
+	};
+	
+	// Clear the canvas so it can be redrawn in animation.
+	function clearCanvas() {
+		ctx.clearRect(0, 0, W, H);
+	}
+	
+	// A function that will update the position of the ball is also needed. Lets create one
+	function update() {
+		clearCanvas();
+		paddle.draw();
+		
+	}
+
+	// Now, the animation time!
+	// in setInterval, 1000/x depicts x fps! So, in this casse, we are aiming for 60fps for smoother animations.
+	setInterval(update, 1000/60);
+</script>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "PubNub",
+  "version": "0.0.0",
+  "authors": [
+    "Kevin Gleason <kevin@pubnub.com>"
+  ],
+  "description": "Turn your smartphone into a WiiMote",
+  "main": "index.html",
+  "keywords": [
+    "PubNub",
+    "Wii",
+    "Smartphone",
+    "Android",
+    "iOS"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^0.5"
+  }
+}

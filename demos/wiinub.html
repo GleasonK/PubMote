@@ -1,0 +1,206 @@
+<html>
+<head>
+	<head>WiiNub - Coin Collector</head>
+	<style>
+		/* Some basic styling */
+		#canvas {
+			display: block;
+			border: 1px solid blue;
+			margin: 10px auto;
+			background: -webkit-linear-gradient(#ccf1ff 0%, #ffffff 93.05%);
+		}
+		#channel { font-style: italic; }
+	</style>
+</head>
+
+<body style="text-align: center;">
+	<h1 style="color: red;">WiiNub</h1>
+	<p>
+		</b>Navigate to <a href="controller.html" style="color:red;">the controller</a> on your phone. Then click the Polymer icon and join 
+		<span id="channel">wiinub</span><br>
+		<i>Note:</i> For best experience, lock your phone in portrait mode.
+		
+	</p>
+	<p><b>To Play:</b> Tilt your phone to move the paddle. Shake your phone to boost the ball.</p>
+	<h2 id="score" style="color:blue;">SCORE: 0 </h2>
+	<canvas id="canvas"></canvas>	
+</body>
+
+<script src="http://cdn.pubnub.com/pubnub-3.7.1.min.js"></script> 
+<script type="text/javascript">
+	
+	var channelNum = Math.floor(Math.random()*100);
+  	var channelName = "wiinub" + channelNum;
+  	document.getElementById("channel").innerHTML = channelName;
+	
+	// Initiate PubNub. The channel should change based on your device.
+	pubnub = PUBNUB.init({                                  
+		publish_key   : 'demo',
+		subscribe_key : 'demo'
+	})
+
+	pubnub.subscribe({                                      
+		channel : channelName,
+		message : function(message){
+			switch(message.type){
+				case "aX":
+					paddle.tiltVal = message.data;
+					break;
+				case "shake":
+					ball.vy = -10;
+					break;
+				case "button":
+					if (message.data=="UP" || message.data=="X" || message.data=="O")
+						ball.vy = -10;
+					break;
+				default:
+					break;
+			}
+		}
+	})
+	
+	// Now setting the width and height of the canvas, as well as the TILT_FACTOR which may change by device.
+	var W = 350;
+	var H = 500;
+	var TILT_FACTOR = 15;
+	var SCORE = 0;
+	
+	// Now some basic canvas stuff. Here we'll make a variable for the canvas and then initialize its 2d context for drawing
+	var canvas = document.getElementById("canvas"),
+		   ctx = canvas.getContext("2d");
+	
+	// Applying these to the canvas element
+	canvas.height = H; 
+	canvas.width  = W;
+
+	var ball   = {};
+	var paddle = {};
+	var coin   = {};
+
+	var gravity = 0.25;
+	var	bounceFactor = 0.92;
+
+	ball = {
+		x: W/2,
+		y: 50,
+		radius: 25,
+		color: "red",
+
+		//Velocities
+		vx: 0,
+		vy: 1,
+		
+		draw: function() {
+			// Here, we'll first begin drawing the path and then use the arc() function to draw the circle.
+			// The arc function accepts 6 parameters: 
+			//  (x position, y position, radius, start angle, end angle and a boolean for anti-clockwise direction)
+			ctx.beginPath();
+			ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2, false);
+			ctx.fillStyle = this.color;
+			ctx.fill();
+			ctx.closePath();
+		}
+	};
+	
+	paddle = {
+		tiltVal : 0,
+		width: 50, 
+		leftY : 0,
+		rightY : 0,
+		draw: function() {
+			var centerX = W/2,
+			    centerY = H*(4/5);
+			this.leftY  = centerY + TILT_FACTOR * this.tiltVal;
+			this.rightY = centerY - TILT_FACTOR * this.tiltVal;
+			ctx.beginPath();
+			ctx.moveTo(centerX,centerY);
+			ctx.lineTo(0, this.leftY);
+			ctx.moveTo(centerX,centerY);
+			ctx.lineTo(W, this.rightY);
+			ctx.strokeStyle="green";
+			ctx.stroke();
+		},
+		// Collide takes the balls x value and returns the Y value of the paddle at that location.
+		collide : function(x){
+			return (this.rightY-this.leftY)/W * x + this.leftY;
+		}
+	};
+	
+	coin = {
+		x : W/4,
+		y : H/2,
+		radius : 10,
+		color : "gold",
+		
+		draw : function () {
+			ctx.beginPath();
+			ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2, false);
+			ctx.fillStyle = this.color;
+			ctx.fill();
+			ctx.closePath();
+		},
+		// Takes the canvas W and H to generate a coin.
+		makeCoin : function(W,H){
+			var maxY = H * (3/4);
+			this.x = Math.random() * (W-this.radius) + this.radius;
+			this.y = Math.random() * maxY + this.radius;
+			this.draw();
+		}
+	}
+	
+	// To animate the canvas, we must redraw it each frame. This will clear it to be redrawn.	
+	function clearCanvas() {
+		ctx.clearRect(0, 0, W, H);
+	}
+	
+	// A function that will update the position of the ball and paddle is also needed. It looks like this:
+	function update() {
+		clearCanvas();
+		paddle.draw();
+		ball.draw();
+		coin.draw();
+		
+		// Make the ball move by adding the velocity to the position
+		ball.y += ball.vy;
+		ball.x += ball.vx;
+
+		// Add Gravity to y velocity
+		ball.vy += gravity;
+		
+		// Logic for bouncing off the paddle/ground
+		var collideY = paddle.collide(ball.x)
+		if(ball.y + ball.radius > collideY) {
+			ball.y   = collideY - ball.radius;
+			ball.vy *= -bounceFactor;
+			ball.vx += -1 * paddle.tiltVal;
+		} else if (ball.y + ball.radius > H) {
+			ball.y   = H - ball.radius;
+			ball.vy *= -bounceFactor;
+		} else if (ball.y - ball.radius < 0){
+			ball.y  = ball.radius;
+			ball.vy = -1 * ball.vy;
+		}
+		
+		// Logic for bouncing off of side walls
+		if (ball.x - ball.radius < 0){
+			ball.x = ball.radius;
+			ball.vx = -ball.vx;
+		} else if (ball.x + ball.radius > W){
+			ball.x = W - ball.radius;
+			ball.vx = -ball.vx;
+		}
+		
+		// Logic for hitting a coin
+		var distance = Math.sqrt(Math.pow(coin.x - ball.x, 2) + Math.pow(coin.y - ball.y, 2));
+		if (distance < ball.radius + coin.radius){
+			SCORE++;
+			coin.makeCoin(canvas.width,canvas.height);
+			document.getElementById("score").innerHTML = "SCORE: " + SCORE;
+		}
+	}
+
+	// Now, the animation time!
+	// in setInterval, 1000/x depicts x fps! So, in this casse, we are aiming for 60fps for smoother animations.
+	setInterval(update, 1000/60);
+
+</script>
