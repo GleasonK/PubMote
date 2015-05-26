@@ -41,17 +41,17 @@
 
 	pubnub.subscribe({                                      
 		channel : channelName,
-		message : function(message){
+		message : function(message){ 	// Handle all game controls in the subscribe function.
 			switch(message.type){
-				case "aX":
+				case "aX":				// Will tilt the paddle
 					paddle.tiltVal = message.data;
 					break;
 				case "shake":
-					ball.vy = -10;
+					ball.vy = -10;  	// Will bounce the ball
 					break;
 				case "button":
 					if (message.data=="UP" || message.data=="X" || message.data=="O")
-						ball.vy = -10;
+						ball.vy = -10; 	// Will bounce the ball
 					break;
 				default:
 					break;
@@ -60,10 +60,10 @@
 	})
 	
 	// Now setting the width and height of the canvas, as well as the TILT_FACTOR which may change by device.
-	var W = 350;
-	var H = 500;
-	var TILT_FACTOR = 15;
-	var SCORE = 0;
+	var W = 350;			// Configure the canvas dimensions
+	var H = 500;			
+	var TILT_FACTOR = 15; 	// Tilt Factor is just to regulate how much the paddle tilts with a change in aX
+	var SCORE = 0;			// Coin counter
 	
 	// Now some basic canvas stuff. Here we'll make a variable for the canvas and then initialize its 2d context for drawing
 	var canvas = document.getElementById("canvas"),
@@ -73,6 +73,7 @@
 	canvas.height = H; 
 	canvas.width  = W;
 
+	// Create the objects used by this game
 	var ball   = {};
 	var paddle = {};
 	var coin   = {};
@@ -107,7 +108,7 @@
 		width: 50, 
 		leftY : 0,
 		rightY : 0,
-		draw: function() {
+		draw: function() {  		// Draw the paddle at the angle determined by the aX of controller
 			var centerX = W/2,
 			    centerY = H*(4/5);
 			this.leftY  = centerY + TILT_FACTOR * this.tiltVal;
@@ -126,6 +127,7 @@
 		}
 	};
 	
+	// A simple gold coin
 	coin = {
 		x : W/4,
 		y : H/2,
@@ -167,7 +169,7 @@
 		// Add Gravity to y velocity
 		ball.vy += gravity;
 		
-		// Logic for bouncing off the paddle/ground
+		// Logic for bouncing off the paddle/ground. Changes direction on a bounce
 		var collideY = paddle.collide(ball.x)
 		if(ball.y + ball.radius > collideY) {
 			ball.y   = collideY - ball.radius;
@@ -181,7 +183,7 @@
 			ball.vy = -1 * ball.vy;
 		}
 		
-		// Logic for bouncing off of side walls
+		// Logic for bouncing off of side walls. Changes x velocity if ball hits a wall
 		if (ball.x - ball.radius < 0){
 			ball.x = ball.radius;
 			ball.vx = -ball.vx;
@@ -190,7 +192,7 @@
 			ball.vx = -ball.vx;
 		}
 		
-		// Logic for hitting a coin
+		// Logic for hitting a coin. Checks if there is an overlap between two circles.
 		var distance = Math.sqrt(Math.pow(coin.x - ball.x, 2) + Math.pow(coin.y - ball.y, 2));
 		if (distance < ball.radius + coin.radius){
 			SCORE++;

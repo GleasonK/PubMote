@@ -59,14 +59,19 @@
 		}
 	</style>
 </head>
+
+<!-- Body tags fullbreed ensures that the template takes the entire screen, unresolved prevents FUOC -->
 <body fullbreed unresolved>	
+	<!-- Create a template to handle the controller's functions -->
 	<template is="auto-binding" id="controller-template">
 		<paper-shadow id="gamepad" z="1" class="card">
-			<template if="{{isConfigured}}" id=channel>
+			<template if="{{isConfigured}}" id=channel> <!-- Only shows when boolean is true. -->
 				<p style="text-align: center;"><i>Channel: {{channel}}</i></p>
 			</template>
 		
+			<!-- The arrow buttons of the game pad. Use HTML5 data-* to tell which button is clicked -->
 			<div id="arrow-btns"> 
+				<!-- Uses Polymer's on-tap to link the template's function handleButton() -->
 		    	<paper-button data-key="UP" on-tap="{{handleButton}}">
 					<core-icon data-key="UP" icon="hardware:keyboard-arrow-up"></core-icon>
 				</paper-button> <br>
@@ -81,9 +86,11 @@
 				<paper-button data-key="DOWN" on-tap="{{handleButton}}">
 					<core-icon data-key="DOWN" icon="hardware:keyboard-arrow-down"></core-icon>
 				</paper-button> <br>
+				<!-- Your custom controller icon -->
 				<img src="pubnub.png" style="width:100px; margin: 50px;">	
 			</div>
 			
+			<!-- The three floating action buttons, X O and choose channel -->
 			<div id="action-btns">
 				<paper-fab icon="close" data-key="X" on-tap="{{handleButton}}"></paper-fab>
 				<paper-fab icon="radio-button-off" data-key="O" on-tap="{{handleButton}}"></paper-fab>
@@ -91,6 +98,7 @@
 				<paper-fab mini icon="polymer" style="background:black" on-tap="{{changeChannel}}"></paper-fab>
 			</div>
 		</paper-shadow>
+		<!-- The PubNub Polymer element, handles push and sucscribe from one element -->
 		<core-pubnub publish_key="pub-c-3a6515b4-cc50-4515-82ea-80d76f361027" subscribe_key="sub-c-a6b102dc-00a0-11e5-8fd4-0619f8945a4f">
 			<core-pubnub-publish id="pub" channel="{{channel}}" message="test"></core-pubnub-publish>
 		</core-pubnub>
@@ -111,28 +119,29 @@
 		this.$.pub.message = {"type":"button", "data":e.target.getAttribute('data-key') };
 		this.$.pub.publish();
 	};
-	controller.changeChannel = function(e){
+	controller.changeChannel = function(e){			// Prompt a user to change the channel
 		this.isConfigured = true;
-		var channel = prompt("Enter a channel: ");
+		var channel = prompt("Enter a channel: ");	// Creates the prompt
 		if (channel == "" || channel == null) channel="demo";
-		this.channel = channel;
+		this.channel = channel;						// Ignores the change if null or empty
 	}
-	controller.ready = function() {
+	controller.ready = function() {			// This code executes once the controller template is loaded
 		var iOS = /(iPad|iPhone|iPod)/g.test( navigator.userAgent );
-		var lastUpdate = Date.now();
-		var SHAKE_THRESHOLD = 1250;
+		var lastUpdate = Date.now();		// Last update to threshold PubNub publishes
+		var SHAKE_THRESHOLD = 1250;			// Change this value depending on what you consider a shake
 		
 		if (window.DeviceMotionEvent == undefined) {
-	        //No accelerometer is present. Use buttons. 
+	        //No accelerometer is present. Can only use buttons. 
 	        alert("no accelerometer");
 	    }
 	    else {
+		    // Device has an accelerometer. Can use everything.
 	        alert("accelerometer found");
 	        window.addEventListener("devicemotion", accelerometerUpdate, true);
 	    }    
 	    
-		function accelerometerUpdate(e) {
-		    if (Date.now() - lastUpdate > 100) {  // Only checks the accelerometer value ever 100ms
+		function accelerometerUpdate(e) {			// The eventListener function that updates the aX value and shake
+		    if (Date.now() - lastUpdate > 100) {  	// Only checks the accelerometer value ever 100ms
 			    lastUpdate = timeNow;
 				var aX = event.accelerationIncludingGravity.x*1;  // Used for tilt
 				var aY = event.accelerationIncludingGravity.y*1; 

@@ -36,7 +36,6 @@
 
   <h1>HTML5 <span id="pubman">PubMan</span></h1>
 
-  
   <p style="text-align: center">
 	  <a href="http://arandomurl.com/">Writeup</a> | Code on <a href="http://arandomurl.com/">Github</a>
 	  <br><br>
@@ -63,23 +62,20 @@
         "(firefox 3.6+, Chrome 4+, Opera 10+ and Safari 4+)</small>";
     }
     
-    function fireKey(el, key)
-	{
-    //Set key to corresponding code. This one is set to the left arrow key.
-    if(document.createEventObject)
-    {
-        var eventObj = document.createEventObject();
-        eventObj.keyCode = key;
-        el.fireEvent("onkeydown", eventObj);   
-    }else if(document.createEvent)
-    {
-        var eventObj = document.createEvent("Events");
-        eventObj.initEvent("keydown", true, true);
-        eventObj.which = key;
-        eventObj.keyCode = key;
-        el.dispatchEvent(eventObj);
-    }
-} 
+	// Simulates clicking a key
+	function fireKey(el, key) {
+	    if (document.createEventObject) {
+	        var eventObj = document.createEventObject();
+	        eventObj.keyCode = key;
+	        el.fireEvent("onkeydown", eventObj);   
+	    } else if (document.createEvent) {
+	        var eventObj = document.createEvent("Events");
+	        eventObj.initEvent("keydown", true, true);
+	        eventObj.which = key;
+	        eventObj.keyCode = key;
+	        el.dispatchEvent(eventObj);
+	    }
+	} 
    
     
     // Initiate PubNub. The channel should change based on your device.
@@ -95,33 +91,32 @@
 	pubnub.subscribe({                                      
 		channel : channelName,
 		message : function(message){
-			if (message.type == "button")
+			if (message.type == "button") {
 				switch(message.data){
 					case "UP":
-						fireKey(el, 38);
+						fireKey(el, 38);	// Up Arrow Key
 						break;
-					case "DOWN": //40
-						fireKey(el, 40);
+					case "DOWN":
+						fireKey(el, 40);	// Down Arrow Key
 						break;
 					case "LEFT":
-						fireKey(el, 37);
+						fireKey(el, 37);	// Left Arrow Key
 						break;
-					case "RIGHT": //39
-						fireKey(el, 39);
+					case "RIGHT":
+						fireKey(el, 39);	// Right Arrow Key
 						break;
 					case "X":
-						fireKey(el, 78); //N
+						fireKey(el, 78);	// N Key
 						break;
 					case "O":
-						fireKey(el, 78); //N
+						fireKey(el, 78);	// N Key
 						break;
 					default:
 						break;
 				}
-			if (message.type == "hit" )
-				ball.vy = -10
+			}
 		}
-	})
+	});
 
   </script>
 
