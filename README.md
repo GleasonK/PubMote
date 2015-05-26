@@ -261,7 +261,8 @@ If an accelerometer is found, we attach a `devicemotion` listener to our `window
 
 ```
 function accelerometerUpdate(e) {
-    if (Date.now() - lastUpdate > 100) {  // Only checks the accelerometer value ever 100ms
+	var timeNow = Date.now();
+    if (timeNow - lastUpdate > 100) {  // Only checks the accelerometer value ever 100ms
 	    lastUpdate = timeNow;
 		var aX = event.accelerationIncludingGravity.x*1;  // Used for tilt
 		var aY = event.accelerationIncludingGravity.y*1; 

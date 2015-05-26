@@ -141,8 +141,9 @@
 	    }    
 	    
 		function accelerometerUpdate(e) {
-			var timeNow = Date.now()		// The eventListener function that updates the aX value and shake
-		    if (timeNow - lastUpdate > 100) {  	// Only checks the accelerometer value ever 100ms
+			var timeNow = Date.now();			// The eventListener function that updates the aX value and shake
+		    var timeDiff = timeNow - lastUpdate;		
+		    if (timeDiff > 100) {  	// Only checks the accelerometer value ever 100ms
 			    lastUpdate = timeNow;
 				var aX = event.accelerationIncludingGravity.x*1;  // Used for tilt
 				var aY = event.accelerationIncludingGravity.y*1; 
