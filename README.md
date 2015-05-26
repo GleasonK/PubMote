@@ -4,7 +4,7 @@ With all this technology around us, it's surprising that most devices do not int
 
 The [live demo of PubMote][PubMote] can be seen here. Navigate to the [controller][PMController] on your smartphone and to one of the [demos][PubMote] on your desktop. In this blog post I will show you how to create your PubMote and how to use it for HTML5 games. Your gamepad can have any design you want, with any features. Trackpad, buttons, accelerometer, anything goes. The PubMote I cover in this guide will have four arrow keys, a bar that tilts with the accelerometer, and three action buttons. If you need a reference at any time, use the [full code](https://github.com/GleasonK/PubMote/blob/master/controller_lite.html).
 
-![PubMote](https://raw.githubusercontent.com/GleasonK/PubMote/master/img/controller.png =250x "The PubMote controller from the live demo.")
+<img src="https://raw.githubusercontent.com/GleasonK/PubMote/master/img/controller.png" width="250" title="The PubMote controller from the live demo." alt="PubMote">
 
 ####Prerequisites 
 - Basic knowledge of Polymer 
@@ -39,7 +39,7 @@ The first step to creating your gamepad is [Installing Polymer](https://www.poly
 
 Running those commands should result in the following file structure:
 
-![bower-install](https://raw.githubusercontent.com/GleasonK/PubMote/master/img/install-polymer.png =700x "File structure after a bower install of Polymer.")
+<img src="https://raw.githubusercontent.com/GleasonK/PubMote/master/img/install-polymer.png" width="700" title="File structure after a bower install of Polymer." alt="bower-install">
 
 To get started using Polymer elements, include `webcomponents.min.js` in the `<head>` tag of your `index.html`.
 
@@ -88,7 +88,7 @@ Now you can use all those Polymer elements you just downloaded and imported.
 
 First, we will make our body tag to house all Polymer elements. Inside that, we use `<paper-shadow>` which we will later style to have the look of a Material Design [Card](http://www.google.com/design/spec/components/cards.html). Inside that we create arrow keys using a `<paper-button>	` and a `<core-icon>`. I have an HTML5 `<canvas>` that we will use to later show accelerometer tilt. Our action buttons are `<paper-fab>` with `<core-icon>` icons.
 
-![PubMote_labeled](https://raw.githubusercontent.com/GleasonK/PubMote/master/img/controller_labeled.png =250x "Labeled Polymer PubMote")
+<img src="https://raw.githubusercontent.com/GleasonK/PubMote/master/img/controller_labeled.png" width="250" title="Labeled Polymer PubMote" alt="PubMote_labeled">
 
 ```
 <body fullbreed unresolved>	
@@ -217,7 +217,7 @@ controller.changeChannel = function(e){
 
 Take a deep breath. Currently, all of our gamepad buttons are functional. If I press the `<paper-button data-key="UP" on-tap="{{handleButton}}">` button, it will call the template's handleButton function. That function pulls the data-key field ("UP"), and then publishes the value to the current channel. 
 
-![Gameboy](https://github.com/GleasonK/PubMote/raw/master/img/Nintendo_Gameboy.jpg =250x)
+<img src="https://github.com/GleasonK/PubMote/raw/master/img/Nintendo_Gameboy.jpg" width="250" alt="Gameboy">
 
 Welcome to 1989, we now have a functional Gameboy! We can do better than that though. The final step for us to catch the 2006 Wii is tracking the smartphone's accelerometer values so we can add tilts and shakes to our games.
 
@@ -306,7 +306,7 @@ Congratulations, you made your very own PubMote! Now we can go use it in some ja
 
 I am going to show you how to use your gamepad with a javascript game that uses the keyboard. To see an example of using the accelerometer, see [this code with comments](https://github.com/GleasonK/PubMote/blob/master/demos/wiinub.html).
 
-![Pac-Man](https://raw.githubusercontent.com/GleasonK/PubMote/master/img/PubMan.png =250x)
+<img src="https://raw.githubusercontent.com/GleasonK/PubMote/master/img/PubMan.png" width="250" alt="Pac-Man">
 
 I found this [javascript version of Pac-Man](https://github.com/GleasonK/PubMote/blob/master/demos/pacman/pacman.js) open source on github. It uses the N key to start the game and the arrow keys to control Pac-Man. To use the PubMote, I simply created a function in Pac-Man's `index.html` to simulate keypresses.
 
