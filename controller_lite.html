@@ -157,6 +157,9 @@
 				var dY = Math.abs(aY - controller.aY); 
 				var dZ = Math.abs(aZ - controller.aZ);
 		
+				// Calculate the controller's total speed. This will tell whether there was a shake.
+				controller.speed = Math.abs(aX + aY + aZ - controller.aX - controller.aY - controller.aZ)/ timeDiff * 10000;
+				
 				// Only change if the dX was large enough, avoids noise. Publish if there was a change.
 				if (dX > 0.45) { 
 					controller.aX = Math.floor(aX*2)/2.0;  // Floor to the nearest half.
@@ -166,16 +169,13 @@
 				if (dY > 0.45) controller.aY = Math.floor(aY*2)/2.0;
 				if (dZ > 0.45) controller.aZ = Math.floor(aZ*2)/2.0;
 				
-				// Calculate the controller's total speed. This will tell whether there was a shake.
-				controller.speed = Math.abs(aX + aY + aZ - controller.aX - controller.aY - controller.aZ)/ timeDiff * 10000;
-				
 				// Play around with SHAKE_THRESHOLD. If speed is larger than ST, publish a shake.
 				if (controller.speed > SHAKE_THRESHOLD) { 
 					controller.$.pub.message = {'type':'shake', 'data':controller.speed};
 					controller.$.pub.publish();
 				}
 			}
-		}
+		}	
 
 	}
 	
