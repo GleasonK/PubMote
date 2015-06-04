@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link href="../bower_components/polymer/polymer.html" rel="import">
+	<link href="../bower_components/paper-button/paper-button.html" rel="import">
+	<link href="../bower_components/paper-fab/paper-fab.html" rel="import">
+	<link href="../bower_components/iron-icons/iron-icons.html" rel="import">
+	<link href="../bower_components/iron-icons/hardware-icons.html" rel="import">
+	<link href="../bower_components/pubnub-element/pubnub-element.html" rel="import">
+</head>
+
+<dom-module id="pub-control">
+	<style>
+		/* CSS rules for your element */
+		#arrow-btns, #action-btns {
+			text-align: center;    
+	    }
+	
+	    #canvas{		    
+		    margin: 10px auto;
+			border: 3px solid blue;
+	    }
+	    
+		paper-button{
+			background: rgba(217, 217, 217, 1);
+			padding: 3px 15px;
+			margin: 5px;
+		}
+		
+		paper-fab{
+			margin: 5px 10px;
+			background: red;	
+		}
+		
+		.fullscreen {
+			padding-top: 25px;
+			width: 100%;
+			height: 100vh;
+		}
+		
+		#channel {
+			font-size: 15px;
+			margin: 10px auto;
+			font-style: italic;
+		}
+		
+		.card {
+		    margin:auto;
+		    margin-top:5px;
+		    background-color:#FFFFFF;
+		    border-radius:2px;
+		    color:#000000;
+		    border:1px solid #d8d8d8;
+		    padding:10px;
+		    text-align:center;
+		    position:relative;
+		}
+	
+	</style>
+	<template>
+		<div id="gamepad"  class="card">
+			<div id="arrow-btns"> 
+				<p id="channel" hidden="{{!isConfigured}}">{{channel}}</p>
+		    	<paper-button data-key="UP"  on-down="handleButton">
+					<iron-icon data-key="UP" icon="hardware:keyboard-arrow-up"></iron-icon>
+				</paper-button> <br>
+				
+				<paper-button  data-key="LEFT" on-down="handleButton">
+					<iron-icon data-key="LEFT" icon="hardware:keyboard-arrow-left"></iron-icon>
+				</paper-button>
+				<paper-button  data-key="RIGHT" on-down="handleButton">
+					<iron-icon data-key="RIGHT" icon="hardware:keyboard-arrow-right"></iron-icon>
+				</paper-button> <br/>
+				
+				<paper-button data-key="DOWN" on-down="handleButton">
+					<iron-icon data-key="DOWN" icon="hardware:keyboard-arrow-down"></iron-icon>
+				</paper-button> <br>
+				<img src="../pubnub.png" style="width: 225px; margin: 15px;"></canvas>
+			</div>
+			<div id="action-btns">
+				<paper-fab icon="icons:close" data-key="X" on-down="handleButton"></paper-fab>
+				<paper-fab icon="icons:radio-button-unchecked" data-key="O" on-tap="handleButton"></paper-fab>
+				<br> 
+				<paper-fab mini icon="polymer" style="background:black" on-tap="changeChannel"></paper-fab>
+			</div>
+		</div>
+		
+		<core-pubnub publish_key="pub-c-3a6515b4-cc50-4515-82ea-80d76f361027" subscribe_key="sub-c-a6b102dc-00a0-11e5-8fd4-0619f8945a4f">
+			<core-pubnub-publish id="pub" channel="{{channel}}" message="test"></core-pubnub-publish>
+		</core-pubnub>
+	</template>
+</dom-module>
+
+<script>
+  	// element registration
+	Polymer({
+		is: "pub-control",
+		properties: {
+			aX: {
+				type : Number,
+				value: 0.0
+			},
+			aY: {
+				type : Number,
+				value: 0.0
+			},
+			aZ: {
+				type : Number,
+				value: 0.0
+			},
+			xPos: {
+				type : Number,
+				value: 0
+			},
+			yPox: {
+				type : Number,
+				value: 0
+			},
+			speed: {
+				type : Number,
+				value: 0
+			},
+			channel: {
+				type : String,
+				value: "demo"
+			},
+			isConfigured: {
+				type : Boolean,
+				value: false
+			}
+		},
+		// add properties and methods on the element's prototype
+		handleButton: function(e){
+			this.$.pub.message = {"type":"button", "data":e.currentTarget.dataset.key.toString()};
+			this.$.pub.publish();
+		},
+		changeChannel: function(e){
+
+			var channel = prompt("Enter a channel: ");
+			if (channel=="" || channel==null) channel="demo";
+			this.channel = channel;
+			this.isConfigured = true;
+		},
+		ready: function(){			
+			// Tilt of canvas
+			var iOS = /(iPad|iPhone|iPod)/g.test( navigator.userAgent );
+			var lastUpdate = Date.now();
+			var SHAKE_THRESHOLD = 1250;
+			
+			if (window.DeviceMotionEvent == undefined) {
+		        //No accelerometer is present. Use buttons. 
+		        alert("no accelerometer");
+		    }
+		    else {
+		        alert("accelerometer found");
+		        window.addEventListener("devicemotion", accelerometerUpdate, true);
+		    }    
+		    
+		    var self = this;
+			function accelerometerUpdate(e) {
+			    var timeNow = Date.now();
+			    var timeDiff = timeNow - lastUpdate;
+			    
+			    if (timeDiff > 100) {
+				    lastUpdate = timeNow;
+					var aX = event.accelerationIncludingGravity.x*1;
+					var aY = event.accelerationIncludingGravity.y*1; 
+					var aZ = event.accelerationIncludingGravity.z*1;
+					
+					// Fix for iOS
+					aX = iOS ? -1*aX : aX;
+					
+					//The following two lines are just to calculate a
+					// tilt. Not really needed. 
+					self.xPos = Math.atan2(aY, aZ);
+					self.yPos = Math.atan2(aX, aZ);
+					
+					var dX = Math.abs(aX - self.aX);
+					var dY = Math.abs(aY - self.aY); 
+					var dZ = Math.abs(aZ - self.aZ);
+					console.log("dX:" + dX + " " + "aX:" + aX + " this.aX:" + self.aX);
+					self.speed = Math.abs(aX + aY + aZ - self.aX - self.aY - self.aZ)/ timeDiff * 10000;
+		
+					if (dX > 0.45) { 
+					    
+						self.aX = Math.floor(aX*2)/2.0;
+						self.$.pub.message = {'type':'aX', 'data':self.aX};
+						self.$.pub.publish();
+					}
+					if (dY > 0.25) { 
+						self.aY = Math.floor(aY*2)/2.0;
+						//sendData(controller.channel,"aY",controller['aY']); 
+					}
+					if (dZ > 0.25) { 
+						self.aZ = Math.floor(aZ*2)/2.0;
+						//sendData(controller.channel,"aZ",controller['aZ']); 
+					}
+					
+					if (self.speed > SHAKE_THRESHOLD) { 
+						self.$.pub.message = {'type':'shake', 'data':self.speed};
+						self.$.pub.publish();
+					}
+				}  	
+			}		
+		}
+	});
+
+</script>
+
+

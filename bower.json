@@ -1,0 +1,26 @@
+{
+  "name": "PubMote",
+  "version": "1.0.0",
+  "authors": [
+    "Kevin Gleason <kaagleason@gmail.com>"
+  ],
+  "description": "PubNub Gamepad",
+  "main": "index.html",
+  "keywords": [
+    "PubNub",
+    "Polymer"
+  ],
+  "license": "MIT",
+  "homepage": "http://kevingleason.me/PubMote/",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0",
+    "pubnub-element": "~3.6.7"
+  }
+}
