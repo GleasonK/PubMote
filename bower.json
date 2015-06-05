@@ -1,19 +1,17 @@
 {
-  "name": "PubNub",
-  "version": "0.0.0",
+  "name": "PubMote",
+  "version": "1.0.0",
   "authors": [
-    "Kevin Gleason <kevin@pubnub.com>"
+    "Kevin Gleason <kaagleason@gmail.com>"
   ],
-  "description": "Turn your smartphone into a WiiMote",
+  "description": "PubNub Gamepad",
   "main": "index.html",
   "keywords": [
     "PubNub",
-    "Wii",
-    "Smartphone",
-    "Android",
-    "iOS"
+    "Polymer"
   ],
   "license": "MIT",
+  "homepage": "http://kevingleason.me/PubMote/",
   "ignore": [
     "**/.*",
     "node_modules",
@@ -22,8 +20,7 @@
     "tests"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^0.5",
-    "pubnub-element": "~3.6.7",
-    "screenfull": "~2.0.0"
+    "polymer": "Polymer/polymer#^1.0.0",
+    "pubnub-element": "~3.6.7"
   }
 }
